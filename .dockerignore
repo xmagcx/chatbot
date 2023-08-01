@@ -1,0 +1,11 @@
+.git*
+docker
+.Dockerfile.swp
+/venv/*
+/venv/
+prueba.txt
+*.mp3
+*.wav
+execute
+consume.py
+Dockerfile
