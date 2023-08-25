@@ -21,7 +21,7 @@ class Bard:
 
 
 if __name__ == "__main__":
-    url = "http://localhost:8080/ask"
+    url = "http://192.168.1.156:8080/ask"
     session_id ="ZAirF-Ur-UgrJjsy7JQtpdycxIvG1pX_KucTypvPp5dXMPbNggOBBbO_x6MREM5OXUJ4kQ." #use your cookie value for __Secure-1PSID
 
     payload = {

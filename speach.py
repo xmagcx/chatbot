@@ -21,7 +21,7 @@ def download_file(url,params):
     
     headers = {"Content-Type": "application/json; charset=utf-8"}
     
-    local_filename = "download.wav"
+    local_filename = "generated_speech.mp3"
     with requests.get(url,params=params,headers=headers, stream=True) as r:
         with open(local_filename, 'wb') as f:
             shutil.copyfileobj(r.raw, f)

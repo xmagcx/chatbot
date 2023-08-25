@@ -6,6 +6,7 @@ Example Usage:
 """
 
 import base64
+import json
 #import config
 import gradio as gr
 import io
@@ -15,23 +16,18 @@ from bard import Bard
 from transcribe import Transcribe 
 from speach import Speach 
 
-URL_BARD = "http://localhost:8080/ask"
+URL_BARD = "http://192.168.1.156:8080/ask"
 COOKIE_BARD = "ZAirF-Ur-UgrJjsy7JQtpdycxIvG1pX_KucTypvPp5dXMPbNggOBBbO_x6MREM5OXUJ4kQ."
-URL_SPEACH_TEXT = "http://localhost:8081/uploadfile/"
+URL_SPEACH_TEXT = "http://192.168.1.156:8081/uploadfile/"
 LANG_SPEACH_TEXT = "es-ES"
-URL_TEXT_SPEACH  = "http://localhost:8082/audio"
+URL_TEXT_SPEACH  = "http://192.168.1.156:8082/audio"
 GENERATED_SPEECH_PATH = "generated_speech.mp3"
 
 def text_speach(url,context):
     model = Speach(url,context)
     response = model.request()
-    print(response)
-    result = ""
-    if response.status_code == 200:
-        result = response.text
-    else:
-        result = "Hay un problema con mi Modelo"
-    return result
+ 
+    return response
 
 def generate_response(prompt_input,idbard):
     normalized=""
@@ -52,8 +48,8 @@ def speach_text(url,file,lang):
     response = model.request()
     print(response)
     result = ""
-    if response.status_code == 200:
-        result = response.text
+    if response != "":
+        result = response
     else:
         result = "Hay un problema con mi Modelo"
     return result
@@ -89,16 +85,16 @@ def transcribe_audio(audio_file: str) -> str:
     """
     # gradio sends in a .wav file type, but it may not be named that. Rename with
     # .wav extension because Whisper model only accepts certain file extensions.
+   
     if not audio_file.endswith(".wav"):
         os.rename(audio_file, audio_file + ".wav")
         audio_file = audio_file + ".wav"
 
     # Open audio file and transcribe
-    with open(audio_file, "rb") as f:
-        transcript = speach_text(URL_SPEACH_TEXT,audio_file,LANG_SPEACH_TEXT)
-    text_transcription = transcript["response"]
+    transcript = speach_text(URL_SPEACH_TEXT,audio_file,LANG_SPEACH_TEXT)
 
-    return text_transcription
+
+    return transcript
 
 
 def chat_complete(
@@ -129,11 +125,14 @@ def chat_complete(
 
     # Fetch response from OpenAI
     print("Messages sent to call: ", messages)
-    response =generate_response(messages,COOKIE_BARD)
+    response =generate_response(text_input,COOKIE_BARD)
+    dictionary ={}
+
+    dictionary = dict({'content':response})
 
     # Extract and store message
-    system_message = dict(response["choices"][0]["message"])
-    messages.append(system_message)
+    system_message = dictionary
+    messages.append(dictionary)
 
     # Return message to display
     display_message = system_message["content"]
@@ -183,8 +182,8 @@ def text_speech(input_text: str) -> str:
     text_speach(URL_TEXT_SPEACH,input_text)
 
     # save the response audio as an MP3 file
-    with open(GENERATED_SPEECH_PATH, "wb") as out:
-        out.write(text_speach)
+    #with open(GENERATED_SPEECH_PATH, "wb") as out:
+    #    out.write(text_speach)
 
     # Generate audio player HTML object for autoplay
     audio_player = audio_file_to_html(GENERATED_SPEECH_PATH)
@@ -197,13 +196,14 @@ def text_speech(input_text: str) -> str:
 """
 Gradio UI Definition
 """
+
 with gr.Blocks() as demo:
     # Session state box containing all user/system messages, hidden
     messages = gr.State(list())
 
     # Initialize TTS
     tts_fn = None
-    #tts_fn = text_speech
+    tts_fn = text_speech
     
 
     # Set up layout and link actions together
@@ -212,14 +212,14 @@ with gr.Blocks() as demo:
             
             # Audio Input Box
             audio_input = gr.Audio(
-                source="microphone", type="filepath", label="User Audio Input"
+                source="microphone", type="filepath", label="Audio Usuario"
             )
 
             # User Input Box
-            transcribed_input = gr.Textbox(label="Transcription")
+            transcribed_input = gr.Textbox(label="Transcripción/Texto input")
 
             # Story Output Box
-            story_msg = gr.Textbox(label="Story")
+            story_msg = gr.Textbox(label="Respuesta")
 
             if tts_fn:
                 # Connect story output to audio output after calling TTS on it
@@ -234,7 +234,35 @@ with gr.Blocks() as demo:
     transcribed_input.change(
         chat_complete, [transcribed_input, messages], [story_msg, messages]
     )
-
-
 demo.launch()
+
+
+
+
+""" 
+def greet(name):
+    return name 
+
+
+import gradio as gr
+
+demo = gr.Blocks()
+
+mic_transcribe = gr.Interface(
+    fn=transcribe_audio,
+    inputs=gr.Audio(source="microphone", type="filepath"),
+    outputs=gr.outputs.Textbox(),
+)
+
+
+with demo:
+    gr.TabbedInterface(
+        [mic_transcribe],
+        ["Transcribe Microphone"],
+    )
+
+demo.launch(debug=True)
+
+
+ """
 
