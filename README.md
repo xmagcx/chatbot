@@ -6,8 +6,8 @@
 
 ## Install & Dependence
 - python 3.10
-- [Text To Speach Project](https://github.com/xmagcx/tts)
-- [Speach To Text Project](https://github.com/xmagcx/stt)
+- [Text To Speech Project](https://github.com/xmagcx/tts)
+- [Speech To Text Project](https://github.com/xmagcx/stt)
 - [Bard API Project](https://github.com/xmagcx/bard)
 
 
